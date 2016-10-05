@@ -2,7 +2,7 @@
 
 void FSS::generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b) {
   // n = length of input a - TODO, determine how a is represented
-  int n = to_string(a).length();
+  int n = std::to_string(a).length();
   int lambda = 128;
   // create arrays size 
   // Question: how long to make s and ts?
@@ -13,23 +13,23 @@ void FSS::generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b) {
   
 
   // sample random s0 <- {0, 1}^lambda
-  if(!RAND_bytes(unsigned char *s0, lambda)) {
+  if(!RAND_bytes((unsigned char*) s0, lambda)) {
     printf("Random byte generation for s0 failed\n");
     exit(1);
   }
   // sample random s1 <- {0, 1}^lambda
-  if(!RAND_bytes(unsigned char *s1, lambda)) {
+  if(!RAND_bytes((unsigned char*) s1, lambda)) {
     printf("Random byte generation for s1 failed\n");
     exit(1);
   }
   // sample random t0 <- {0, 1}^lambda
-  if(!RAND_bytes(unsigned char *t0, 1)) {
+  if(!RAND_bytes((unsigned char*) t0, 1)) {
     printf("Random byte generation for t0 failed\n");
     exit(1);
   }
   // take t1 <- t0 XOR 1
-  *t1 = *t0 ^ 1
-
+  *t1 = *t0 ^ 1;
+/*
   unsigned char *cw[n];
   for (int i = 1; i < n; i++) {
     if (a[i] == 0) {
@@ -50,4 +50,5 @@ void FSS::generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b) {
     *(t1 + i - 1) = t1(keep) ^ *(t1 + i - 1) * t(keep)cw;
     *(t1 + i - 1) = t1(keep) ^ *(t1 + i - 1) * t(keep)cw;
   }
+*/
 }

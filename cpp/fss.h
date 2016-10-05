@@ -2,21 +2,21 @@
 #define FSS_H
 
 #include "openssl-aes.h"
-
 #include <openssl/rand.h>
-
-class FSS {
-  private:
-
-
-
-  public:
-    FSS();
-    void generateTreeEq(ServerKeyEq* k0, ServerKeyEq* k1);
-    void evaluateEq();
-}
+#include <string>
 
 struct ServerKey {
   // TODO: flesh out more
   unsigned char s;
 };
+
+class FSS {
+  private:
+
+  public:
+    FSS();
+    void generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b);
+    void evaluateEq();
+};
+
+#endif
