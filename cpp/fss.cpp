@@ -1,24 +1,29 @@
 #include "fss.h"
 
+int main(int argc, char** argv) 
+{
+  FSS fss;
+  ServerKey k0;
+  ServerKey k1; 
+  uint64_t a = 123;
+  uint64_t b = 21;
+  fss.generateTreeEq(&k0, &k1, a, b);
+}
+
 void FSS::generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b) {
   // n = length of input a - TODO, determine how a is represented
-  int n = std::to_string(a).length();
-  int lambda = 128;
-  // create arrays size 
-  // Question: how long to make s and ts?
-  unsigned char s0[n];
-  unsigned char s1[n];
-  unsigned char t0[n];
-  unsigned char t1[n];
+  unsigned char s0[128];
+  unsigned char s1[128];
+  unsigned char *t0;
+  unsigned char *t1;
   
-
   // sample random s0 <- {0, 1}^lambda
-  if(!RAND_bytes((unsigned char*) s0, lambda)) {
+  if(!RAND_bytes((unsigned char*) s0, 16)) {
     printf("Random byte generation for s0 failed\n");
     exit(1);
   }
   // sample random s1 <- {0, 1}^lambda
-  if(!RAND_bytes((unsigned char*) s1, lambda)) {
+  if(!RAND_bytes((unsigned char*) s1, 16)) {
     printf("Random byte generation for s1 failed\n");
     exit(1);
   }
@@ -29,7 +34,8 @@ void FSS::generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b) {
   }
   // take t1 <- t0 XOR 1
   *t1 = *t0 ^ 1;
-/*
+
+/* 
   unsigned char *cw[n];
   for (int i = 1; i < n; i++) {
     if (a[i] == 0) {

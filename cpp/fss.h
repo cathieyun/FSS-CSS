@@ -14,7 +14,6 @@ class FSS {
   private:
 
   public:
-    FSS();
     void generateTreeEq(ServerKey* k0, ServerKey* k1, uint64_t a, uint64_t b);
     void evaluateEq();
 };
