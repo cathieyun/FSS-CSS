@@ -3,10 +3,8 @@ package main
 import (
   "crypto/rand"
   "crypto/aes"
-  "crypto/cipher"
   "math/big"
   "fmt"
-  "io"
 )
 
 type ServerKey struct {
@@ -16,28 +14,18 @@ type ServerKey struct {
 func PRF(x []byte, keys [][]byte) []byte {
   out := make([]byte, 48)
   for i := range keys {
-    // get AES_k[i](x) 
-
+    // get AES_k[i]
     block, err := aes.NewCipher(keys[i])
     if err != nil {
       panic(err.Error())
     }
-    nonce := make([]byte, 12)
-    if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-      panic(err.Error())
+    // get AES_k[i](x) 
+    temp := make([]byte, 16)
+    block.Encrypt(temp, x)
+    // get AES_k[i](x) ^ x
+    for j := range temp {
+      out[i*16+j] = temp[j] ^ x[j]
     }
-    aesgcm, err := cipher.NewGCM(block)
-    if err != nil {
-      panic(err.Error())
-    }
-    ciphertext := aesgcm.Seal(nil, nonce, x, nil)
-    fmt.Printf("%x\n", ciphertext)
-
-    // get AES_k[i](x) ^ xw
-    // for i:=i*16; i++; i<(i+1)*16-1 {
-
-    // }
-    // out[i*16:(i+1)*16-1] = ciphertext ^ x
   }
   return out
 }
@@ -58,6 +46,8 @@ func Gen(a byte, b byte, n byte) (ServerKey, ServerKey) {
   }
   gs0 := PRF(s0, keys)
   gs1 := PRF(s1, keys)
+  
+  
   fmt.Printf("t1: %x\ngs0: %x\ngs1: %x\n", t1, gs0, gs1)
   return ServerKey {5}, ServerKey {6}
 }
