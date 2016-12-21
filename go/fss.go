@@ -53,11 +53,14 @@ func generateTreeEq(a []byte, b byte, n int) (*ServerKeyEq, *ServerKeyEq) {
   k0 := new(ServerKeyEq)
   k1 := new(ServerKeyEq)
 
+  cw := make([][]byte, len(a))
+  s0 := make([][]byte, n)
+  s1 := make([][]byte, n)
   // get random s0, s1, t0
-  s0 := make([]byte, AES_SIZE)
-  s1 := make([]byte, AES_SIZE)
-  rand.Read(s0)
-  rand.Read(s1)
+  s0[0] = make([]byte, AES_SIZE)
+  s1[0] = make([]byte, AES_SIZE)
+  rand.Read(s0[0])
+  rand.Read(s1[0])
   ttemp, _ := rand.Int(rand.Reader, big.NewInt(2))
   t0 := ttemp.Int64() & 1
   t1 := t0 ^ 1
@@ -67,30 +70,31 @@ func generateTreeEq(a []byte, b byte, n int) (*ServerKeyEq, *ServerKeyEq) {
     keys[i] = make([]byte, 16)
     rand.Read(keys[i])
   }
+  
+  for i:=1; i<=n; i++ {
+    gs0 := PRF(s0[i-1], keys)
+    gs1 := PRF(s1[i-1], keys)
 
-  cw := make([][]byte, len(a))
-  for i:=0; i<n; i++ {
-    // Should we only use a subset of s0, s1? 
-    // In which case - start at i = 1, take s0_(i-1)
-    gs0 := PRF(s0, keys)
-    gs1 := PRF(s1, keys)
-    fmt.Printf("a[i]&1: %x\n", a[i]&1)
+    fmt.Printf("a[i-1]&1: %x\n", a[i-1]&1)
+    // if a_i = 1: keep = r, lose = l
     offset := 0
-    if (a[i]&1) == 0 {
+    // if a_i = 0: keep = l, lose = r    
+    if (a[i-1]&1) == 0 {
       offset = 17
     } 
     fmt.Printf("offset: %i\n", offset)
-    cw[i] = make([]byte, 18)
+
+    cw[i-1] = make([]byte, 18)
     for k:=0; k<16; k++ {
       // if a[i]== 0: s0r = gs0[17:33], s1r = gs1[17:33]
       // if a[i]== 1: s0l = gs0[0:16], s1l = gs1[0:16]
-      cw[i][k] = gs0[k+offset] ^ gs1[k+offset]
+      cw[i-1][k] = gs0[k+offset] ^ gs1[k+offset]
     }
     // tlcw := t0L ^ t1L ^ a[i] ^ 1
-    tlcw := gs0[16] ^ gs1[16] ^ a[i] ^ 1
+    cw[i-1][17] = gs0[16] ^ gs1[16] ^ a[i-1] ^ 1
     // trcw := t0R ^ t1R ^ a[i]
-    trcw := gs0[33] ^ gs1[33] ^ a[i] & 1
-    fmt.Printf("tlcw: %x\ntrcw: %x\n", tlcw, trcw)
+    cw[i-1][18] = gs0[33] ^ gs1[33] ^ a[i-1] & 1
+    fmt.Printf("tlcw: %x\ntrcw: %x\n", cw[i][17], cw[i][18])
   }
 /*
     unsigned char scw = s01 ^ s1l;
