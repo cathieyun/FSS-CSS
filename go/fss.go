@@ -5,6 +5,7 @@ import (
   "crypto/aes"
   "math/big"
   "fmt"
+  "log"
 )
 
 // Number of bits in integer
@@ -55,7 +56,7 @@ func getBit(n uint64, pos uint) int {
   }
 }
 
-func generateTreeEq(a, b uint64) (*ServerKeyEq, *ServerKeyEq) {
+func generateTreeEq(a, b uint64) (*ServerKeyEq, *ServerKeyEq, *big.Int) {
   k0 := new(ServerKeyEq)
   k1 := new(ServerKeyEq)
 
@@ -121,10 +122,26 @@ func generateTreeEq(a, b uint64) (*ServerKeyEq, *ServerKeyEq) {
       s1[k] = gs1[k+keep] * k1.cw[i].scw[k]
     }
     // TODO: which bit get xor'ed with t? least or most? Implement.
-    t0 = gs0[16+keep] ^ t0
-    t1 = gs1[16+keep] ^ t1
+    tcw_keep := k0.cw[i].tlcw
+    if (a_i == 1) {
+      tcw_keep = k0.cw[i].trcw
+    }
+    t0 = gs0[16+keep] ^ t0 * tcw_keep
+    t1 = gs1[16+keep] ^ t1 * tcw_keep 
   }
-  return k0, k1
+  // CW^n = (-1)^t_1^n[beta - convert(s0) + convert(s1)]
+  // Generate 64 bit prime for abelien group
+  p, err := rand.Prime(rand.Reader, N)
+  if err != nil {
+    log.Fatal(err)
+  }
+  k0.cw[AES_SIZE].scw = make([]byte, AES_SIZE)
+
+
+
+
+  // TODO: get CW^n
+  return k0, k1, p
 }
 
 func main() {
